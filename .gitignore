@@ -3,3 +3,6 @@
 /bower_components
 .sass-cache
 *.map
+.npm-cache
+/demo/clickoutside.directive.js
+/demo/index_2.html

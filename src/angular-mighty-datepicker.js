@@ -10,7 +10,8 @@
         filter: void 0,
         callback: void 0,
         markerTemplate: "{{ day.marker }}",
-        template: pickerTemplate
+        template: pickerTemplate,
+        rangePicker: false
       };
       return {
         restrict: "AE",
@@ -92,7 +93,10 @@
               } else {
                 return moment.range($scope.after, $scope.model).contains(day) || day.isSame($scope.after, 'day');
               }
-            } else {
+            } else if ($scope.options.rangePicker && $scope.model.length === 2) {
+              return moment.range($scope.model[0], $scope.model[1]).contains(day);
+            }
+            else {
               return false;
             }
           };
@@ -221,8 +225,19 @@
                 if (day.selected) {
                   ix = _indexOfMoment($scope.model, day.date, 'day');
                   $scope.model.splice(ix, 1);
-                } else {
+                } else if ($scope.model.length < 2) {                  
                   $scope.model.push(moment(day.date));
+                } else if (moment(day.date).isAfter($scope.model[1])) {
+                  $scope.model.splice(1, 1, moment(day.date));
+                } else if (moment(day.date).isBefore($scope.model[0])) {
+                  $scope.model.splice(0, 1, moment(day.date));
+                } else if (moment(day.date).isBetween($scope.model[0], $scope.model[1])) {
+                  $scope.model.splice(0, 1, moment(day.date));
+                } 
+                if ($scope.model.length === 2 && moment($scope.model[0]).isAfter($scope.model[1])) {
+                  var swap = $scope.model[0];
+                  $scope.model[0] = $scope.model[1];
+                  $scope.model[1] = swap;
                 }
                 break;
               default:

@@ -7,7 +7,7 @@
   color: #aaa;
   cursor: auto;
 }
-.mighty-picker-calendar__day--in-range {
+.mighty-picker-calendar__day--in-range:not(.mighty-picker-calendar__day--disabled):not(.mighty-picker-calendar__day--selected) {
   color: #347ab3;
   font-weight: bold;
 }
@@ -22,7 +22,7 @@
   border: 1px solid #aaa;
   bottom: 16px;
 }
-.mighty-picker-calendar__day--marked:hover .mighty-picker-calendar__day-marker {
+.mighty-picker-calendar__day--marked:hover __day-marker {
   display: block;
 }
 .mighty-picker-calendar__day--marked {

@@ -1,16 +1,16 @@
 {
-  "name": "angular-mighty-datepicker",
-  "version": "0.1.4",
+  "name": "angular-mighty-datepicker-extended",
+  "version": "0.1.5",
   "authors": [
     "Krzysztof Jung <krzysztof.jung@monterail.com>",
     "Patryk Peas <patryk.peas@monterail.com>",
     "Kamil Nicieja <kamil.nicieja@monterail.com>",
     "Bartosz Erbert <bartosz.erbert@monterail.com>"
   ],
-  "repository": "git://github.com/monterail/angular-mighty-datepicker.git",
+  "repository": "git://github.com/volodimier/angular-mighty-datepicker-extended.git",
   "description": "Angular based datepicker with mighty options",
   "main": [
-    "build/angular-mighty-datepicker.js",
+    "src/angular-mighty-datepicker.js",
     "build/angular-mighty-datepicker.css"
   ],
   "dependencies": {
@@ -19,5 +19,5 @@
     "moment-range": "~1.0.1"
   },
   "license": "MIT",
-  "homepage": "http://github.com/monterail/angular-mighty-datepicker"
+  "homepage": "http://github.com/volodimier/angular-mighty-datepicker-extended"
 }

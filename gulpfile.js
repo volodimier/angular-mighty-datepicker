@@ -5,11 +5,13 @@ var gulp    = require("gulp"),
     connect = require("gulp-connect"),
     changed = require("gulp-changed"),
     bower   = require("gulp-bower"),
+	rename = require("gulp-rename"),	
     // compilers
-    less    = require("gulp-less"), // gulp-sass is broken
-    coffee  = require("gulp-coffee"),
-    coffeelint  = require("gulp-coffeelint"),
-    plumber = require('gulp-plumber');
+    less    = require("gulp-less"),
+    plumber = require('gulp-plumber'),
+	// minifiers
+	cleanCss = require("gulp-clean-css"),
+	uglify = require("gulp-uglify");
 
 var warn = function(err) { console.warn(err); };
 var paths = {
@@ -24,7 +26,9 @@ var onError = function (err) {
 
 gulp.task("default", ["bower", "build"]);
 
-gulp.task("build", ["coffee", "less"])
+gulp.task("build", ["less"]);
+
+gulp.task("minify", ["clean-css", "uglify"]);
 
 gulp.task("server", ["build", "watch"], function() {
   connect.server({
@@ -47,15 +51,6 @@ gulp.task("bower", function() {
     .pipe(gulp.dest("bower_components"))
 });
 
-// compilers
-
-// gulp.task("copy", function(){
-//   return gulp.src(paths.src + "**/*.{json,png,jpg,gif,eot,svg,ttf,woff}")
-//     .pipe(changed(paths.dst))
-//     .pipe(gulp.dest(paths.dst))
-//     .pipe(connect.reload());
-// });
-
 gulp.task("less", function(){
   return gulp.src(paths.src + "**/*.less")
     .pipe(changed(paths.dst, { extension: '.css' }))
@@ -67,16 +62,17 @@ gulp.task("less", function(){
     .pipe(connect.reload());
 });
 
-gulp.task("coffee", function(){
-  return gulp.src(paths.src + "**/*.coffee")
-    .pipe(changed(paths.dst, { extension: '.js' }))
-    .pipe(coffeelint())
-    .pipe(coffeelint.reporter())
-    .pipe(plumber({
-      errorHandler: onError
-    }))
-    .pipe(coffee().on('error', warn))
-    .pipe(gulp.dest(paths.dst))
-    .pipe(connect.reload());
+gulp.task("clean-css", function () {
+    return gulp.src(paths.dst + "*.css")
+    .pipe(cleanCss())
+	.pipe(rename({ suffix: '.min' }))
+    .pipe(gulp.dest(paths.dst + "min"));
+});
+
+gulp.task("uglify", function () {
+	return gulp.src(paths.src + "*.js")
+	.pipe(uglify())
+	.pipe(rename({ suffix: '.min' }))
+	.pipe(gulp.dest(paths.dst))
 });
 //
