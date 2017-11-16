@@ -3,7 +3,7 @@
     "$compile",
     function ($compile) {
       var options, pickerTemplate;
-      pickerTemplate = "<div class=\"mighty-picker__wrapper\">\n  <button type=\"button\" class=\"mighty-picker__prev-month\"\n    ng-click=\"moveMonth(-1, $event)\">\n    <<\n  </button>\n  <div class=\"mighty-picker__month\"\n    ng-repeat=\"month in months track by $index\">\n    <div class=\"mighty-picker__month-name\" ng-bind=\"month.name\"></div>\n    <table class=\"mighty-picker-calendar\">\n      <tr class=\"mighty-picker-calendar__days\">\n        <th ng-repeat=\"day in ::month.weeks[1]\"\n          class=\"mighty-picker-calendar__weekday\">\n          {{:: day.date.format('dd') }}\n        </th>\n      </tr>\n      <tr ng-repeat=\"week in month.weeks\">\n        <td\n            ng-class='{\n              \"mighty-picker-calendar__day\": day,\n              \"mighty-picker-calendar__day--selected\": day.selected,\n              \"mighty-picker-calendar__day--disabled\": day.disabled,\n              \"mighty-picker-calendar__day--in-range\": day.inRange,\n              \"mighty-picker-calendar__day--marked\": day.marker,\n              \"mighty-picker-calendar__day--highlighted\": day.highlighted\n            }'\n            ng-repeat=\"day in ::week track by $index\" ng-mouseenter=\"highlight(day, $event)\" ng-click=\"select(day, $event)\">\n            <div class=\"mighty-picker-calendar__day-wrapper\">\n              {{:: day.date.date() }}\n            </div>\n            <div class=\"mighty-picker-calendar__day-marker-wrapper\">\n              <div class=\"mighty-picker-calendar__day-marker\"\n                ng-if=\"day.marker\"\n                ng-bind-template=\"\">\n              </div>\n            </div>\n        </td>\n      </tr>\n    </table>\n  </div>\n  <button type=\"button\" class=\"mighty-picker__next-month\"\n    ng-click=\"moveMonth(1, $event)\">\n    >>\n  </button>\n</div>";
+      pickerTemplate = "<div class=\"mighty-picker__wrapper\">\n  <button type=\"button\" class=\"mighty-picker__prev-month\"\n   ng-class='{\"mighty-picker__prev-month--inactive\": isButtonDisabled()}' ng-click=\"!isButtonDisabled() && moveMonth(-1, $event)\">\n    <<\n  </button>\n  <div class=\"mighty-picker__month\"\n    ng-repeat=\"month in months track by $index\">\n    <div class=\"mighty-picker__month-name\" ng-bind=\"month.name\"></div>\n    <table class=\"mighty-picker-calendar\">\n      <tr class=\"mighty-picker-calendar__days\">\n        <th ng-repeat=\"day in ::month.weeks[1]\"\n          class=\"mighty-picker-calendar__weekday\">\n          {{:: day.date.format('dd') }}\n        </th>\n      </tr>\n      <tr ng-repeat=\"week in month.weeks\">\n        <td\n            ng-class='{\n              \"mighty-picker-calendar__day\": day,\n              \"mighty-picker-calendar__day--selected\": day.selected,\n              \"mighty-picker-calendar__day--disabled\": day.disabled,\n              \"mighty-picker-calendar__day--in-range\": day.inRange,\n              \"mighty-picker-calendar__day--marked\": day.marker,\n              \"mighty-picker-calendar__day--highlighted\": day.highlighted\n            }'\n            ng-repeat=\"day in ::week track by $index\" ng-mouseenter=\"highlight(day, $event)\" ng-click=\"select(day, $event)\">\n            <div class=\"mighty-picker-calendar__day-wrapper\">\n              {{:: day.date.date() }}\n            </div>\n            <div class=\"mighty-picker-calendar__day-marker-wrapper\">\n              <div class=\"mighty-picker-calendar__day-marker\"\n                ng-if=\"day.marker\"\n                ng-bind-template=\"\">\n              </div>\n            </div>\n        </td>\n      </tr>\n    </table>\n  </div>\n  <button type=\"button\" class=\"mighty-picker__next-month\"\n    ng-click=\"moveMonth(1, $event)\">\n    >>\n  </button>\n</div>";
       options = {
         mode: "simple",
         months: 1,
@@ -118,6 +118,7 @@
               day = moment(start).add(d, 'days');
               withinMonth = day.month() === month;
               withinLimits = _withinLimits(day, month);
+              afterToday = moment(day).isSame(moment(), 'day') || moment(day).isAfter(moment());
               if ($scope.options.filter) {
                 filter = $scope.options.filter(day);
               }
@@ -125,7 +126,7 @@
                 date: day,
                 selected: _isSelected(day) && withinMonth,
                 inRange: _isInRange(day),
-                disabled: !(withinLimits && withinMonth && filter),
+                disabled: !(withinLimits && withinMonth && filter && afterToday),
                 marker: withinMonth ? _getMarker(day) : void 0,
                 highlighted: false
               };
@@ -224,6 +225,7 @@
               }
             }
             $scope.options.start.add(step, 'month');
+            console.log($scope.months);
             _prepare();
           };
 
@@ -239,23 +241,22 @@
             }
             switch ($scope.options.mode) {
               case "multiple":
-                if (day.selected) {
-                  ix = _indexOfMoment($scope.model, day.date, 'day');
-                  $scope.model.splice(ix, 1);
-                } else if ($scope.model.length < 2) {
-                  $scope.model.push(moment(day.date));
-                } else if (moment(day.date).isAfter($scope.model[1])) {
-                  $scope.model.splice(1, 1, moment(day.date));
-                } else if (moment(day.date).isBefore($scope.model[0])) {
-                  $scope.model.splice(0, 1, moment(day.date));
-                } else if (moment(day.date).isBetween($scope.model[0], $scope.model[1])) {
-                  $scope.model.splice(0, 1, moment(day.date));
-                }
-                if ($scope.model.length === 2 && moment($scope.model[0]).isAfter($scope.model[1])) {
-                  var swap = $scope.model[0];
-                  $scope.model[0] = $scope.model[1];
-                  $scope.model[1] = swap;
-                }
+                if (!day.selected) {
+                  if ($scope.model.length < 2) {
+                    $scope.model.push(moment(day.date));
+                  } else if (moment(day.date).isAfter($scope.model[1])) {
+                    $scope.model.splice(1, 1, moment(day.date));
+                  } else if (moment(day.date).isBefore($scope.model[0])) {
+                    $scope.model.splice(0, 1, moment(day.date));
+                  } else if (moment(day.date).isBetween($scope.model[0], $scope.model[1])) {
+                    $scope.model.splice(0, 2, moment(day.date));
+                  }
+                  if ($scope.model.length === 2 && moment($scope.model[0]).isAfter($scope.model[1])) {
+                    var swap = $scope.model[0];
+                    $scope.model[0] = $scope.model[1];
+                    $scope.model[1] = swap;
+                  }
+                }                
                 break;
               default:
                 $scope.model = day.date;
@@ -274,6 +275,14 @@
                   _isHighlited(day, dayToCheck);
                 })
               });
+            }
+          }
+
+          $scope.isButtonDisabled = function() {
+            if (moment() >= moment($scope.months[0].name)) {
+              return true;
+            } else {
+              return false;
             }
           }
 

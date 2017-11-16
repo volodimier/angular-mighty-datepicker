@@ -41,3 +41,6 @@
   display: inline-block;
   margin: 0 6px;
 }
+.mighty-picker__prev-month--inactive {
+  color: gray;
+}
