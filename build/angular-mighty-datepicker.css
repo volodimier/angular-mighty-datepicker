@@ -44,3 +44,9 @@
 .mighty-picker__prev-month--inactive {
   color: gray;
 }
+.mighty-picker__wrapper {
+  display: flex;
+}
+.mighty-picker__wrapper .button-wrapper {
+  display: flex;
+}
