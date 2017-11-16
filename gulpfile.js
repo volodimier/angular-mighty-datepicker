@@ -71,6 +71,9 @@ gulp.task("clean-css", function () {
 
 gulp.task("uglify", function () {
 	return gulp.src(paths.src + "*.js")
+	 .pipe(plumber({
+      errorHandler: onError
+    }))
 	.pipe(uglify())
 	.pipe(rename({ suffix: '.min' }))
 	.pipe(gulp.dest(paths.dst))
