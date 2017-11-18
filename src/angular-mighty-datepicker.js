@@ -3,7 +3,7 @@
     "$compile",
     function ($compile) {
       var options, pickerTemplate;
-      pickerTemplate = "<div class=\"mighty-picker__wrapper\">\n  <div class=\"button-wrapper__prev\">\n <button type=\"button\" class=\"mighty-picker__prev-month\"\n   ng-class='{\"mighty-picker__prev-month--inactive\": isButtonDisabled()}' ng-click=\"!isButtonDisabled() && moveMonth(-1, $event)\">\n    <\n  </button>\n </div>\n <div class=\"mighty-picker__month-wrapper\">\n<div class=\"mighty-picker__month\"\n    ng-repeat=\"month in months track by $index\">\n    <div class=\"mighty-picker__month-name\" ng-bind=\"month.name\"></div>\n    <table class=\"mighty-picker-calendar\">\n      <tr class=\"mighty-picker-calendar__days\">\n        <th ng-repeat=\"day in ::month.weeks[1]\"\n          class=\"mighty-picker-calendar__weekday\">\n          {{:: day.date.format('dd') }}\n        </th>\n      </tr>\n      <tr ng-repeat=\"week in month.weeks\">\n        <td\n            ng-class='{\n              \"mighty-picker-calendar__day\": day,\n              \"mighty-picker-calendar__day--selected\": day.selected,\n \"mighty-picker-calendar__day--selected__start\": day.start,\n \"mighty-picker-calendar__day--selected__end\": day.end,\n              \"mighty-picker-calendar__day--disabled\": day.disabled,\n              \"mighty-picker-calendar__day--in-range\": day.inRange,\n              \"mighty-picker-calendar__day--marked\": day.marker,\n              \"mighty-picker-calendar__day--highlighted\": day.highlighted\n            }'\n            ng-repeat=\"day in ::week track by $index\" ng-mouseenter=\"highlight(day, $event)\" ng-click=\"select(day, $event)\">\n            <div class=\"mighty-picker-calendar__day-wrapper\">\n              {{:: day.date.date() }}\n            </div>\n            <div class=\"mighty-picker-calendar__day-marker-wrapper\">\n              <div class=\"mighty-picker-calendar__day-marker\"\n                ng-if=\"day.marker\"\n                ng-bind-template=\"\">\n              </div>\n            </div>\n        </td>\n      </tr>\n    </table>\n  </div>\n  </div>\n <div class=\"button-wrapper__next\">\n <button type=\"button\" class=\"mighty-picker__next-month\"\n    ng-click=\"moveMonth(1, $event)\">\n    >\n  </button>\n </div>\n </div>";
+      pickerTemplate = "<div class=\"mighty-picker__wrapper\">\n  <div class=\"button-wrapper__prev\">\n <button type=\"button\" class=\"mighty-picker__prev-month\"\n   ng-class='{\"mighty-picker__prev-month--inactive\": isButtonDisabled()}' ng-click=\"!isButtonDisabled() && moveMonth(-1, $event)\"><i class=\"zmdi zmdi-chevron-left\"></i></button>\n </div>\n <div class=\"mighty-picker__month-wrapper\">\n<div class=\"mighty-picker__month\"\n    ng-repeat=\"month in months track by $index\">\n    <div class=\"mighty-picker__month-name\" ng-bind=\"month.name\"></div>\n    <table class=\"mighty-picker-calendar\">\n      <tr class=\"mighty-picker-calendar__days\">\n        <th ng-repeat=\"day in ::month.weeks[1]\"\n          class=\"mighty-picker-calendar__weekday\">\n          {{:: day.date.format('dd') }}\n        </th>\n      </tr>\n      <tr ng-repeat=\"week in month.weeks\">\n        <td\n             ng-class='{\n              \"mighty-picker-calendar__day\": day,\n              \"mighty-picker-calendar__day--selected\": day.selected,\n \"mighty-picker-calendar__day--selected__start\": day.start,\n \"mighty-picker-calendar__day--selected__end\": day.end,\n              \"mighty-picker-calendar__day--disabled\": day.disabled,\n              \"mighty-picker-calendar__day--in-range\": day.inRange,\n              \"mighty-picker-calendar__day--marked\": day.marker,\n              \"mighty-picker-calendar__day--highlighted\": day.highlighted,\n              \"mighty-picker-calendar__day--startHover\": day.startHover,\n              \"mighty-picker-calendar__day--lastHover\": day.lastHover\n            }'\n            ng-repeat=\"day in ::week track by $index\"  ng-mouseenter=\"hover(day, $event)\" ng-mouseleave=\"unhover(day, $event)\" ng-mouseover=\"highlight(day, $event)\" ng-click=\"select(day, $event)\">\n            <div class=\"mighty-picker-calendar__day-wrapper\">\n              {{:: day.date.date() }}\n            </div>\n            <div class=\"mighty-picker-calendar__day-marker-wrapper\">\n              <div class=\"mighty-picker-calendar__day-marker\"\n                ng-if=\"day.marker\"\n                ng-bind-template=\"\">\n              </div>\n            </div>\n        </td>\n      </tr>\n    </table>\n  </div>\n  </div>\n <div class=\"button-wrapper__next\">\n <button type=\"button\" class=\"mighty-picker__next-month\"\n    ng-click=\"moveMonth(1, $event)\"><i class=\"zmdi zmdi-chevron-right\"></i></button>\n </div>\n </div>";
       options = {
         mode: "simple",
         months: 1,
@@ -128,9 +128,11 @@
                 start: _isStart(day),
                 end: _isEnd(day),
                 inRange: _isInRange(day),
-                disabled: !(withinLimits && withinMonth && filter && afterToday),
+                disabled: _isBeforeFirstSelection(day) || !(withinLimits && withinMonth && filter && afterToday),
                 marker: withinMonth ? _getMarker(day) : void 0,
-                highlighted: false
+                highlighted: false,
+                startHover: false,
+                lastHover: false
               };
             });
             return days;
@@ -257,10 +259,10 @@
                     $scope.model[0] = $scope.model[1];
                     $scope.model[1] = swap;
                   }
-                  if ($scope.model.length === 1 && moment(day.date).month() !== moment($scope.months[0].name).month()) {
+                  if ($scope.model.length === 1 && moment(day.date).month() !== $scope.months[0].weeks[1][0].date.month()) {
                     $scope.moveMonth(1, $event);
-                  }                  
-                }                
+                  }
+                }
                 break;
               default:
                 $scope.model = day.date;
@@ -275,35 +277,55 @@
             if ($scope.model.length === 1 && !day.disabled) {
               var weeks = $scope.months[0].weeks.concat($scope.months[1].weeks);
               var days = weeks.map(function (week) {
-                week.map(function(dayToCheck) {                  
+                week.map(function (dayToCheck) {
                   _isHighlited(day, dayToCheck);
                 })
               });
             }
           }
 
-          $scope.isButtonDisabled = function() {
-            if (moment() >= moment($scope.months[0].name)) {
+          $scope.isButtonDisabled = function () {
+            if (moment().isAfter($scope.months[0].weeks[1][0].date)) {
               return true;
             } else {
               return false;
             }
           }
 
-         _isStart = function(day) {
-           return moment($scope.model[0]).isSame(day, 'day') ? true : false;
+          $scope.hover = function (day, $event) {
+            if (!day.disabled) {
+              if ($scope.model.length === 0) {
+                day.startHover = true;
+              } else {
+                day.lastHover = true;
+              }
+            }
           }
 
-          _isEnd = function(day) {            
+          $scope.unhover = function (day, $event) {
+            day.startHover = false;
+            day.lastHover = false;
+          }
+
+
+          _isStart = function (day) {
+            return moment($scope.model[0]).isSame(day, 'day') ? true : false;
+          }
+
+          _isEnd = function (day) {
             return ($scope.model.length === 2 && moment($scope.model[1]).isSame(day, 'day')) ? true : false;
           }
 
-          _isHighlited = function (day, dayToCheck) {            
+          _isHighlited = function (day, dayToCheck) {
             if (moment.range($scope.model[0], day.date).contains(dayToCheck.date) && !moment($scope.model[0]).isSame(dayToCheck.date, 'day') && !dayToCheck.disabled) {
-              dayToCheck.highlighted = true;              
+              dayToCheck.highlighted = true;
             } else {
               dayToCheck.highlighted = false;
             }
+          }
+
+          _isBeforeFirstSelection = function (day) {
+            return $scope.model.length === 1 && !moment($scope.model[0]).isSame(day.date) && moment($scope.model[0]).isAfter(day) ? true : false;
           }
 
           $scope.$watchCollection('markers', function (newMarkers, oldMarkers) {

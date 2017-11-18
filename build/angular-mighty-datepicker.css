@@ -29,12 +29,17 @@
   color: orange;
   font-weight: bold;
 }
-.mighty-picker-calendar__day--selected {
+.mighty-picker-calendar__day--selected,
+.mighty-picker-calendar__day--lastHover {
   color: #3b5;
   font-weight: bold;
 }
-.mighty-picker-calendar__day--highlighted {
+.mighty-picker-calendar__day--highlighted:not(.mighty-picker-calendar__day--lastHover) {
   color: blueviolet;
+  font-weight: bold;
+}
+.mighty-picker-calendar__day--startHover {
+  color: red;
   font-weight: bold;
 }
 .mighty-picker__month {

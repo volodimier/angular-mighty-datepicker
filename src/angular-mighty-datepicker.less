@@ -30,14 +30,18 @@
 	  color: orange;
 	  font-weight: bold;
 	}
-	&__day--selected {
+	&__day--selected, &__day--lastHover {
 	  color: #3b5;
 	  font-weight: bold;
 	}
-	&__day--highlighted {
+	&__day--highlighted:not(.mighty-picker-calendar__day--lastHover) {
 	  color: blueviolet;
 	  font-weight: bold;
-	}	
+	}
+	&__day--startHover {
+		color: red;
+		font-weight: bold;
+	}
 }	
 .mighty-picker__month {
 	  display: inline-block;
