@@ -294,9 +294,9 @@
 
           $scope.hover = function (day, $event) {
             if (!day.disabled) {
-              if ($scope.model.length === 0) {
+              if ($scope.model.length === 0 || $scope.model.length === 2) {
                 day.startHover = true;
-              } else {
+              } else if($scope.model.length === 1) {
                 day.lastHover = true;
               }
             }

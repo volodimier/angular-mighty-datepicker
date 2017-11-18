@@ -38,7 +38,7 @@
   color: blueviolet;
   font-weight: bold;
 }
-.mighty-picker-calendar__day--startHover {
+.mighty-picker-calendar__day--startHover:not(.mighty-picker-calendar__day--selected) {
   color: red;
   font-weight: bold;
 }
