@@ -12,7 +12,9 @@
         callback: void 0,
         markerTemplate: "{{ day.marker }}",
         template: pickerTemplate,
-        rangePicker: false
+        rangePicker: false,
+        dateFrom: "",
+        dateTo: ""
       };
       return {
         restrict: "AE",
@@ -285,9 +287,11 @@
           }
 
           $scope.isButtonDisabled = function () {
-            if (moment().isAfter($scope.months[0].weeks[1][0].date)) {
+            var firstDayInCalendar = $scope.months[0].weeks[0][0].date;
+            var currentDay = moment();
+            if (currentDay.month() > firstDayInCalendar.month() && currentDay.year() >= firstDayInCalendar.year()) {              
               return true;
-            } else {
+            } else {              
               return false;
             }
           }
